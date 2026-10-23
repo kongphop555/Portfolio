@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sylva — Into the living world</title>
-<meta name="description" content="Restoring wild places through patient design, native planting, and a deeper kind of stewardship.">
+<title></title>
+<meta name="description" content="">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 24'%3E%3Crect width='22' height='24' fill='%234a4d44'/%3E%3Cpath fill='%23fff' d='M11 1.3c-2.1 0-3.95 1.2-4.75 2.95C3.95 4.55 2.3 6.25 2.3 8.35c0 2.3 1.9 4.2 4.3 4.2h8.8c2.4 0 4.3-1.9 4.3-4.2 0-2.1-1.65-3.8-4-4.1C14.95 2.5 13.1 1.3 11 1.3Z'/%3E%3Cpath fill='%23fff' d='M9.6 12.55h2.8v4.2c1.35.3 2.45 1.15 3.15 2.4-1.35.4-2.4.15-3.15-.4v4.15H9.6v-4.15c-.75.55-1.8.8-3.15.4.7-1.25 1.8-2.1 3.15-2.4v-4.2Z'/%3E%3C/svg%3E">
 <script>document.documentElement.className += " js";</script>
 <style>
@@ -54,6 +54,9 @@
     min-height:calc(880 * var(--u));
     overflow:hidden;
     isolation:isolate;
+    /* above the sheet, so the dock (fixed, but painted inside this
+       stacking context) stays over the sections as they scroll under it */
+    z-index:2;
     /* the reference screen reads a near-flat #4a4d44 corner to corner —
        all the modelling comes from the light pool the root sits in */
     background:
@@ -120,7 +123,7 @@
      pointer-parallax transform; putting both on one element means whichever
      is written last wins and the dock jumps out of centre. */
   .dock-wrap{
-    position:absolute; z-index:5;
+    position:fixed; z-index:5;
     top:calc(38 * var(--u)); left:0; right:0;
     display:flex; justify-content:center;
     pointer-events:none;
@@ -709,44 +712,309 @@
     .scroll{ left:calc(702 * var(--u)); top:calc(470 * var(--u)); }
     .ghost{ font-size:calc(184 * var(--u)); letter-spacing:calc(14 * var(--u)); bottom:calc(660 * var(--u)); left:calc(-10 * var(--u)); }
   }
+
+  /* ════════════════════════════════════════════════════════════════════ *
+   * the sheet — everything below the hero, on the hero's own tokens.
+   * Type sizes are floored in px the way the narrow dock is: the design
+   * unit alone puts 16.5u body copy at 8px on a phone.
+   * ════════════════════════════════════════════════════════════════════ */
+  :root{ --hero-h: max(100svh, calc(880 * var(--u))); }
+
+  /* The root runs past the hero's bottom edge and overflow cuts it on a
+     hard line, which only showed while the hero was the whole page. This is
+     a full-size copy of the hero's own ground — .hero::after's layers over
+     .hero's — masked to the bottom band, so the moss dissolves into the
+     floor it stands on. z 3 after #scene: over the canvas, under the copy
+     and cards at z 4. */
+  .hero-floor{
+    position:absolute; inset:0; z-index:3; pointer-events:none;
+    background:
+      radial-gradient(72% 44% at 50% 117%, rgba(238,243,231,.50) 0%, rgba(238,243,231,.21) 42%, rgba(238,243,231,.04) 72%, rgba(238,243,231,0) 88%),
+      linear-gradient(180deg, rgba(238,243,231,0) 54%, rgba(238,243,231,.03) 78%, rgba(238,243,231,.085) 100%),
+      radial-gradient(64% 52% at 27% 84%, rgba(232,238,222,.085) 0%, rgba(232,238,222,0) 72%),
+      radial-gradient(70% 60% at 92% 8%,  rgba(24,28,20,.10) 0%, rgba(24,28,20,0) 68%),
+      #4a4d44;
+    -webkit-mask:linear-gradient(180deg, transparent calc(100% - 96 * var(--u)), #000);
+            mask:linear-gradient(180deg, transparent calc(100% - 96 * var(--u)), #000);
+  }
+
+  /* The light pool's source sits below the hero (at 117%), so the sheet
+     draws the rest of the same two ellipses, re-anchored on the hero's
+     height: the colour across the seam matches pixel for pixel. The top
+     layer then lets the whole pool down into the page ground over 360u, so
+     the copy never sits on the bright centre. */
+  .sheet{
+    position:relative;
+    padding-bottom:calc(36 * var(--u));
+    background:
+      linear-gradient(180deg, rgba(56,59,52,0) 0, #383b34 calc(360 * var(--u))),
+      radial-gradient(72% calc(.44 * var(--hero-h)) at 50% calc(.17 * var(--hero-h)), rgba(238,243,231,.50) 0%, rgba(238,243,231,.21) 42%, rgba(238,243,231,.04) 72%, rgba(238,243,231,0) 88%),
+      radial-gradient(64% calc(.52 * var(--hero-h)) at 27% calc(-.16 * var(--hero-h)), rgba(232,238,222,.085) 0%, rgba(232,238,222,0) 72%),
+      linear-gradient(180deg, rgba(238,243,231,.085), rgba(238,243,231,.085)),
+      #4a4d44;
+    overflow:hidden;
+  }
+
+  /* the sheet keeps the stage's 1600u frame and its left rail at 46u, and
+     the four columns fall on the hero's guide lines (405 / 748 / 1091) */
+  .wrap{ width:calc(1600 * var(--u)); margin:0 auto; padding:0 calc(46 * var(--u)); }
+  .cols{
+    display:grid;
+    grid-template-columns:calc(359 * var(--u)) calc(343 * var(--u)) calc(343 * var(--u)) 1fr;
+  }
+
+  .sec{ padding-top:max(112px, calc(168 * var(--u))); }
+  .sec--about{ padding-top:max(140px, calc(232 * var(--u))); }
+
+  .sec-label{
+    display:flex; align-items:center; gap:calc(12 * var(--u));
+    font-size:max(10.5px, calc(11 * var(--u))); font-weight:500;
+    letter-spacing:max(1.4px, calc(1.5 * var(--u))); text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  /* the scroll cue's track, laid flat */
+  .sec-label::before{ content:''; width:calc(32 * var(--u)); height:1px; background:rgba(255,255,255,.18); }
+  .sec-title{
+    margin-top:calc(22 * var(--u)); max-width:calc(1000 * var(--u));
+    font-size:max(32px, calc(52 * var(--u))); line-height:1.08;
+    font-weight:300; letter-spacing:calc(-0.4 * var(--u));
+    color:var(--ink);
+  }
+  .sec-title--xl{ font-size:max(38px, calc(63 * var(--u))); line-height:calc(65 / 63); }
+  .copy{
+    font-size:max(15px, calc(16.5 * var(--u))); line-height:1.42;
+    font-weight:300; color:var(--ink-soft);
+  }
+  .sec-body{ margin-top:max(40px, calc(72 * var(--u))); }
+
+  /* stat type: soft label over a bold value */
+  .facts{ display:grid; gap:calc(20 * var(--u)); align-content:start; }
+  .facts dt{ font-size:max(13px, calc(13.5 * var(--u))); line-height:1.4; font-weight:300; color:var(--ink-soft); }
+  .facts dd{ font-size:max(13px, calc(13.5 * var(--u))); line-height:1.55; font-weight:600; color:var(--ink); }
+
+  /* ── paper: the hero cards' material, in flow ─────────────────────── */
+  .paper{
+    position:relative;
+    background:var(--card); border-radius:calc(46 * var(--u));
+    padding:calc(14 * var(--u));
+    box-shadow:0 calc(30 * var(--u)) calc(70 * var(--u)) rgba(16,21,13,.30);
+    transition:box-shadow .8s var(--ease);
+  }
+  .paper:hover{ box-shadow:0 calc(38 * var(--u)) calc(84 * var(--u)) rgba(16,21,13,.36); }
+  .plate{
+    --mr:calc(34 * var(--u));
+    display:block; position:relative; overflow:hidden; isolation:isolate;
+    border-radius:calc(34 * var(--u)); background:#263025;
+  }
+  .plate img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    transform:scale(1.08);
+    filter:saturate(.92) contrast(1.03);
+    transition:transform 1.25s var(--ease-out), filter .8s var(--ease);
+  }
+  .paper:hover .plate img{ transform:scale(1.13); filter:saturate(1.04) contrast(1.04); }
+  .paper-label{ font-size:max(13px, calc(15.5 * var(--u))); font-weight:300; color:var(--card-label); }
+  .paper-title{
+    font-size:max(20px, calc(26.2 * var(--u))); line-height:1.1;
+    font-weight:400; letter-spacing:calc(-0.5 * var(--u)); color:var(--card-ink);
+  }
+  .paper .knob{
+    position:absolute; right:calc(26 * var(--u)); bottom:calc(26 * var(--u));
+    width:max(44px, calc(54 * var(--u))); height:max(44px, calc(54 * var(--u)));
+    border-radius:50%; background:#fbfcf8; display:grid; place-items:center;
+    box-shadow:0 calc(6 * var(--u)) calc(16 * var(--u)) rgba(16,21,13,.18);
+    transition:transform .5s var(--ease-out), background .4s var(--ease);
+  }
+  .paper .knob svg{ width:max(16px, calc(19 * var(--u))); height:max(16px, calc(19 * var(--u))); display:block; color:#3f453a; }
+  .paper .knob:hover{ transform:scale(1.1) rotate(8deg); background:#fff; }
+  .paper .knob:focus-visible{ outline-color:rgba(28,34,22,.9); }
+
+  /* ── about ──────────────────────────────────────────────────────────── */
+  .about{ row-gap:max(40px, calc(64 * var(--u))); }
+  .about .sec-head{ grid-column:1 / 4; grid-row:1; padding-right:calc(60 * var(--u)); }
+  .about .facts{ grid-column:1; grid-row:2; }
+  .about .p1{ grid-column:2; grid-row:2; padding-right:calc(48 * var(--u)); }
+  .about .p2{ grid-column:3; grid-row:2; padding-right:calc(48 * var(--u)); }
+  .portrait{ grid-column:4; grid-row:1 / 3; align-self:start; }
+  .portrait .plate{ height:calc(330 * var(--u)); }
+  .portrait figcaption{ display:grid; gap:calc(6 * var(--u)); padding:calc(22 * var(--u)) calc(24 * var(--u)) calc(16 * var(--u)); }
+
+  /* ── skills: dock pills on the page ground ─────────────────────────── */
+  .skill-group{ padding-right:calc(40 * var(--u)); }
+  .skill-group h3{
+    font-size:max(13px, calc(13.5 * var(--u))); font-weight:600; color:var(--ink);
+    margin-bottom:calc(18 * var(--u));
+  }
+  .chips{ list-style:none; display:flex; flex-wrap:wrap; gap:calc(6 * var(--u)); }
+  .chips li, .chip-link{
+    display:inline-flex; align-items:center;
+    height:max(32px, calc(36 * var(--u))); padding:0 max(11px, calc(13 * var(--u)));
+    border:1px solid rgba(255,255,255,.11); border-radius:max(9px, calc(10 * var(--u)));
+    background:rgba(255,255,255,.04); color:var(--ink-soft);
+    font-size:max(10.5px, calc(11 * var(--u))); font-weight:500;
+    letter-spacing:max(1.2px, calc(1.5 * var(--u))); text-transform:uppercase;
+    white-space:nowrap; text-decoration:none;
+    transition:color .18s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .chips li:hover, .chip-link:hover{ color:var(--ink); border-color:rgba(255,255,255,.19); background:rgba(31,37,28,.94); }
+
+  /* ── projects ───────────────────────────────────────────────────────── */
+  .projects{ display:grid; grid-template-columns:1fr 1fr; gap:calc(28 * var(--u)); }
+  .project .plate{ height:calc(330 * var(--u)); }
+  .project-body{ padding:calc(26 * var(--u)) calc(110 * var(--u)) calc(26 * var(--u)) calc(24 * var(--u)); display:grid; gap:calc(8 * var(--u)); }
+  .project-body p:not(.paper-label){ font-size:max(14px, calc(15 * var(--u))); line-height:1.45; color:var(--card-label); margin-top:calc(4 * var(--u)); }
+  .tags{ list-style:none; display:flex; flex-wrap:wrap; gap:calc(6 * var(--u)); margin-top:calc(10 * var(--u)); }
+  .tags li{
+    padding:calc(5 * var(--u)) calc(10 * var(--u)); border-radius:max(8px, calc(9 * var(--u)));
+    border:1px solid rgba(35,38,31,.12); color:var(--card-label);
+    font-size:max(10px, calc(10.5 * var(--u))); font-weight:500;
+    letter-spacing:max(1px, calc(1.2 * var(--u))); text-transform:uppercase;
+  }
+
+  /* ── experience ─────────────────────────────────────────────────────── */
+  .jobs{ list-style:none; }
+  .job{ padding:calc(34 * var(--u)) 0; border-top:1px solid rgba(255,255,255,.11); align-items:baseline; }
+  .job:last-child{ border-bottom:1px solid rgba(255,255,255,.11); }
+  .job-when{ font-size:max(13px, calc(13.5 * var(--u))); font-weight:300; color:var(--ink-faint); letter-spacing:calc(.4 * var(--u)); }
+  .job-role{ grid-column:2 / 4; padding-right:calc(48 * var(--u)); }
+  .job-role h3{ font-size:max(18px, calc(24 * var(--u))); line-height:1.2; font-weight:400; letter-spacing:calc(-0.3 * var(--u)); color:var(--ink); }
+  .job-role p{ margin-top:calc(6 * var(--u)); font-size:max(13px, calc(13.5 * var(--u))); font-weight:600; color:var(--ink-soft); }
+
+  /* ── contact: the dock's glass, holding the ways in ────────────────── */
+  .sec--contact{ padding-bottom:max(80px, calc(140 * var(--u))); }
+  .sec--contact .copy{ max-width:calc(520 * var(--u)); margin-top:calc(26 * var(--u)); }
+  .capsule{
+    position:relative; isolation:isolate;
+    display:inline-flex; flex-wrap:wrap; align-items:center; gap:calc(4 * var(--u));
+    margin-top:max(36px, calc(56 * var(--u)));
+    padding:max(6px, calc(6 * var(--u)));
+    border-radius:max(16px, calc(18 * var(--u)));
+    border:1px solid rgba(255,255,255,.11);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,0) 42%),
+      rgba(34,40,31,.74);
+    box-shadow:0 calc(8 * var(--u)) calc(22 * var(--u)) rgba(10,14,8,.30),
+               inset 0 1px rgba(255,255,255,.06);
+  }
+  .cta{
+    display:inline-flex; align-items:center; gap:calc(10 * var(--u));
+    height:max(44px, calc(48 * var(--u))); padding:0 max(16px, calc(20 * var(--u)));
+    border-radius:max(11px, calc(13 * var(--u)));
+    background:#eef1e7; color:#23261f; text-decoration:none;
+    font-size:max(13px, calc(14 * var(--u))); font-weight:500;
+    box-shadow:0 calc(6 * var(--u)) calc(16 * var(--u)) rgba(12,17,9,.24);
+    transition:background .2s var(--ease);
+  }
+  .cta:hover{ background:#fff; }
+  .cta svg{ width:max(15px, calc(16 * var(--u))); height:max(15px, calc(16 * var(--u))); fill:none; stroke:currentColor; stroke-width:1.25; stroke-linecap:round; stroke-linejoin:round; }
+  .capsule .chip-link{ height:max(44px, calc(48 * var(--u))); border-color:transparent; }
+  .cta:focus-visible{ outline-color:rgba(255,255,255,.85); }
+
+  /* ── footer: the wordmark again, closing the page ──────────────────── */
+  .foot{ position:relative; padding-top:calc(30 * var(--u)); height:max(150px, calc(270 * var(--u))); }
+  .foot-row{ display:flex; justify-content:space-between; gap:calc(24 * var(--u)); flex-wrap:wrap;
+    font-size:max(12px, calc(12.5 * var(--u))); color:var(--ink-faint); }
+  .foot-row a{ color:var(--ink-soft); text-decoration:none; }
+  .foot-row a:hover{ color:var(--ink); }
+  .foot-ghost{
+    position:absolute; left:calc(6 * var(--u)); bottom:calc(-64 * var(--u));
+    font-size:calc(310 * var(--u)); line-height:.78; font-weight:400;
+    letter-spacing:calc(30 * var(--u)); color:rgba(255,255,255,.055);
+    white-space:nowrap; user-select:none; pointer-events:none;
+  }
+
+  /* ── scroll reveal: the hero's entrance, once per element ────────────
+     .mask/.fade are keyed to .is-ready and would all fire on load, so the
+     sheet has its own pair, flipped by an observer as each comes in. */
+  .js .rise{ opacity:0; transform:translateY(calc(16 * var(--u))); }
+  .js .rise.is-in{
+    opacity:1; transform:none;
+    transition:opacity 1.05s var(--ease) var(--d,0ms), transform 1.25s var(--ease-out) var(--d,0ms);
+  }
+  .js .reveal{ clip-path:inset(100% 0 0 0 round var(--mr,0px)); }
+  .js .reveal.is-in{
+    clip-path:inset(0 0 0 0 round var(--mr,0px));
+    transition:clip-path 1.05s var(--ease-out) var(--d,0ms);
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .rise,.reveal{ opacity:1 !important; clip-path:none !important; transform:none !important; transition:none !important; }
+    .plate img{ transform:none !important; transition:none !important; }
+  }
+
+  @media (max-width:900px){
+    :root{ --hero-h: max(100svh, calc(1625 * var(--u))); }
+    .hero-floor{
+      background:
+        radial-gradient(90% 30% at 50% 74%, rgba(238,243,231,.40) 0%, rgba(238,243,231,.14) 46%, rgba(238,243,231,0) 82%),
+        linear-gradient(180deg, rgba(238,243,231,0) 62%, rgba(238,243,231,.05) 100%),
+        radial-gradient(64% 52% at 27% 84%, rgba(232,238,222,.085) 0%, rgba(232,238,222,0) 72%),
+        radial-gradient(70% 60% at 92% 8%,  rgba(24,28,20,.10) 0%, rgba(24,28,20,0) 68%),
+        #4a4d44;
+    }
+    .sheet{
+      background:
+        linear-gradient(180deg, rgba(56,59,52,0) 0, #383b34 calc(360 * var(--u))),
+        radial-gradient(64% calc(.52 * var(--hero-h)) at 27% calc(-.16 * var(--hero-h)), rgba(232,238,222,.085) 0%, rgba(232,238,222,0) 72%),
+        linear-gradient(180deg, rgba(238,243,231,.05), rgba(238,243,231,.05)),
+        #4a4d44;
+    }
+    .wrap{ width:100%; padding:0 calc(34 * var(--u)); }
+    .cols, .projects{ display:block; }
+    .about > * + *, .skill-group + .skill-group, .project + .project{ margin-top:max(32px, calc(56 * var(--u))); }
+    .about .sec-head, .skill-group, .job-role, .about .p1, .about .p2{ padding-right:0; }
+    .portrait .plate{ height:calc(520 * var(--u)); }
+    .project .plate{ height:calc(400 * var(--u)); }
+    .project-body{ padding-right:calc(130 * var(--u)); }
+    .job{ display:grid; grid-template-columns:1fr; gap:calc(10 * var(--u)); }
+    .job-role{ grid-column:auto; }
+    .foot-ghost{ font-size:calc(184 * var(--u)); letter-spacing:calc(14 * var(--u)); left:calc(-10 * var(--u)); bottom:calc(-38 * var(--u)); }
+  }
 </style>
 </head>
 <body>
 
 <main class="hero" id="hero">
   <canvas id="scene"></canvas>
+  <div class="hero-floor" aria-hidden="true"></div>
 
   <div class="dock-wrap">
     <nav class="dock par-dock" style="--pd:5" data-spec aria-label="Primary">
-      <a class="dock-item dock-mark" data-dock data-spec data-burst href="#" style="--d:120ms" aria-label="Sylva — home">
+      <a class="dock-item dock-mark" data-dock data-spec data-burst href="#hero" style="--d:120ms" data-c-aria="dock.homeLabel">
         <svg viewBox="0 0 22 24" aria-hidden="true">
           <path d="M11 1.3c-2.1 0-3.95 1.2-4.75 2.95C3.95 4.55 2.3 6.25 2.3 8.35c0 2.3 1.9 4.2 4.3 4.2h8.8c2.4 0 4.3-1.9 4.3-4.2 0-2.1-1.65-3.8-4-4.1C14.95 2.5 13.1 1.3 11 1.3Z"/>
           <path d="M9.6 12.55h2.8v4.2c1.35.3 2.45 1.15 3.15 2.4-1.35.4-2.4.15-3.15-.4v4.15H9.6v-4.15c-.75.55-1.8.8-3.15.4.7-1.25 1.8-2.1 3.15-2.4v-4.2Z"/>
         </svg>
       </a>
-      <a class="dock-item is-active" data-dock data-spec data-burst href="#" style="--d:180ms">
+      <a class="dock-item" data-dock data-spec data-burst href="#about" style="--d:180ms">
         <span class="glyph" aria-hidden="true">
           <svg viewBox="0 0 16 16"><path d="M8 14V9"/><path d="M8 9c0-2.4 1.7-4.3 4-4.3.2 2.6-1.6 4.6-4 4.3Z"/><path d="M8 10.5C7.9 8.4 6.4 6.8 4.4 6.8 4.3 8.9 5.9 10.6 8 10.5Z"/></svg>
         </span>
-        <span>Grove</span>
+        <span data-c="dock.about"></span>
       </a>
-      <a class="dock-item" data-dock data-spec data-burst href="#" style="--d:230ms">
+      <a class="dock-item" data-dock data-spec data-burst href="#skills" style="--d:220ms">
         <span class="glyph" aria-hidden="true">
-          <svg viewBox="0 0 16 16"><path d="M1.6 12.4c2.4-3.4 4.3-5.1 5.7-5.1 2 0 3 3.6 5 3.6 1.1 0 1.9-.5 2.4-1.4"/><path d="M4.3 6.2C5.5 4.4 6.6 3.5 7.6 3.5c1.5 0 2.2 2.4 3.7 2.4"/></svg>
+          <svg viewBox="0 0 16 16"><path d="M8 2.6 13.4 5.4 8 8.2 2.6 5.4z"/><path d="m2.6 8.2 5.4 2.8 5.4-2.8"/><path d="m2.6 11 5.4 2.8 5.4-2.8"/></svg>
         </span>
-        <span>Habitats</span>
+        <span data-c="dock.skills"></span>
       </a>
-      <a class="dock-item" data-dock data-spec data-burst href="#" style="--d:280ms">
+      <a class="dock-item" data-dock data-spec data-burst href="#projects" style="--d:260ms">
         <span class="glyph" aria-hidden="true">
           <svg viewBox="0 0 16 16"><path d="M4 2.4h5.3L12 5.1v8.5H4z"/><path d="M9.2 2.4V5h2.7"/><path d="M6 8.4h4M6 10.8h2.8"/></svg>
         </span>
-        <span>Journal</span>
+        <span data-c="dock.projects"></span>
       </a>
-      <a class="dock-item dock-item--enter" data-dock data-spec data-burst href="#" style="--d:330ms">
+      <a class="dock-item" data-dock data-spec data-burst href="#experience" style="--d:300ms">
         <span class="glyph" aria-hidden="true">
-          <svg viewBox="0 0 16 16"><path d="M6.6 2.5h5.1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6.6"/><path d="M2.6 8h6.6"/><path d="m7 5.6 2.4 2.4L7 10.4"/></svg>
+          <svg viewBox="0 0 16 16"><path d="M3.6 5h8.8a1.2 1.2 0 0 1 1.2 1.2v6a1.2 1.2 0 0 1-1.2 1.2H3.6a1.2 1.2 0 0 1-1.2-1.2v-6A1.2 1.2 0 0 1 3.6 5Z"/><path d="M6 5V3.6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1V5"/><path d="M2.4 8.8h11.2"/></svg>
         </span>
-        <span>Enter</span>
+        <span data-c="dock.experience"></span>
+      </a>
+      <a class="dock-item dock-item--enter" data-dock data-spec data-burst href="#contact" style="--d:340ms">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><path d="M3.4 3.6h9.2a1.2 1.2 0 0 1 1.2 1.2v6.4a1.2 1.2 0 0 1-1.2 1.2H3.4a1.2 1.2 0 0 1-1.2-1.2V4.8a1.2 1.2 0 0 1 1.2-1.2Z"/><path d="m2.8 4.6 5.2 4 5.2-4"/></svg>
+        </span>
+        <span data-c="dock.contact"></span>
       </a>
     </nav>
   </div>
@@ -759,23 +1027,23 @@
       <i style="left:calc(1091 * var(--u))"></i>
     </div>
 
-    <div class="ghost fade" style="--d:1150ms" aria-hidden="true">SYLVA</div>
+    <div class="ghost fade" style="--d:1150ms" aria-hidden="true" data-c="hero.ghost"></div>
 
     <!-- card 1 sits *behind* the canvas so the moss drapes over its shoulder -->
     <article class="card card--about mask" style="--d:760ms; --pd:10; --pr:2.2">
       <figure class="portal" data-delay="920">
-        <span class="portal-media"><img crossorigin="anonymous" src="https://ublctyddhtbgaersvxxb.supabase.co/storage/v1/object/public/threeui-media/scene-images/c74a626e396794aa239bca6f/card-ethos.jpg" alt="A cushion of moss grown over lichen-crusted stones" loading="eager" decoding="async"></span>
+        <span class="portal-media"><img crossorigin="anonymous" data-c-src="hero.aboutCard.image.src" data-c-alt="hero.aboutCard.image.alt" loading="eager" decoding="async"></span>
         <canvas class="pixel-reveal" aria-hidden="true"></canvas>
       </figure>
-      <p class="label">Our Ethos</p>
-      <h2>Let the wild lead.</h2>
+      <p class="label" data-c="hero.aboutCard.label"></p>
+      <h2 data-c="hero.aboutCard.title"></h2>
     </article>
 
     <!-- the About knob rides *outside* the card: the card has to stay a plain
          painted box under #scene, so anything that must sit in front of the
          moss lives here instead, sharing the card's parallax origin -->
     <span class="knob-float" style="--pd:10; --pr:2.2">
-      <button class="knob knob--about mask-circle" style="--d:1100ms" aria-label="Read about Sylva">
+      <button class="knob knob--about mask-circle" style="--d:1100ms" data-go="#about" data-c-aria="hero.aboutCard.knobLabel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 21v-7"/><path d="M12 14c0-3.3 2.4-6 5.5-6 .3 3.6-2.2 6.4-5.5 6Z"/>
           <path d="M12 16c-.1-2.9-2.2-5.2-4.9-5.2C6.8 13.7 9 16 12 16Z"/>
@@ -784,18 +1052,18 @@
     </span>
 
     <h1 class="headline" style="--pd:18; --pr:1.2">
-      <span><i style="--d:260ms">Step into</i></span>
-      <span><i style="--d:360ms">the living world</i></span>
+      <span><i style="--d:260ms" data-c="hero.headline.0"></i></span>
+      <span><i style="--d:360ms" data-c="hero.headline.1"></i></span>
     </h1>
 
-    <p class="lede mask" style="--d:480ms; --pd:14; --pr:1">We restore wild places through patient design, native planting, and a deeper kind of stewardship.</p>
+    <p class="lede mask" style="--d:480ms; --pd:14; --pr:1" data-c="hero.lede"></p>
 
     <div class="pill-clip">
       <div class="pill mask" style="--d:600ms; --pd:15; --pr:1.4">
         <div class="liquid-stage liquid-stage--explore" data-liquid-metal="explore">
           <div class="liquid-plate plate" aria-hidden="true"></div>
           <canvas class="liquid-fx" aria-hidden="true"></canvas>
-          <button class="liquid-button liquid-button--explore btn" type="button">
+          <button class="liquid-button liquid-button--explore btn" type="button" data-go="#projects">
             <svg class="ico" viewBox="0 0 115 115" aria-hidden="true">
               <g stroke="currentColor" stroke-width="11" stroke-linecap="round">
                 <path d="M14 34.5 H101"/>
@@ -803,19 +1071,19 @@
                 <path d="M14 80.5 H68"/>
               </g>
             </svg>
-            <span class="lbl">Explore the work</span>
+            <span class="lbl" data-c="hero.cta"></span>
           </button>
         </div>
       </div>
     </div>
 
-    <span class="play-wrap" style="--pd:20">
+    <span class="play-wrap" style="--pd:20" data-c-play>
       <span class="play-clip">
         <span class="play-glass mask-circle" style="--d:900ms">
           <span class="liquid-stage liquid-stage--play" data-liquid-metal="play">
             <span class="liquid-plate plate" aria-hidden="true"></span>
             <canvas class="liquid-fx" aria-hidden="true"></canvas>
-            <button class="liquid-button liquid-button--play btn" type="button" aria-label="Play the film">
+            <button class="liquid-button liquid-button--play btn" type="button" data-c-aria="hero.play.label">
               <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 5.2v13.6L19 12z" fill="currentColor"/>
               </svg>
@@ -834,7 +1102,7 @@
           <circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/>
         </svg>
       </span>
-      <div><dt>Canopy restored</dt><dd>282 ha</dd></div>
+      <div><dt data-c="hero.stats.0.label"></dt><dd data-c="hero.stats.0.value"></dd></div>
     </dl>
 
     <dl class="stat stat--b mask" style="--d:770ms; --pd:13">
@@ -847,17 +1115,17 @@
           <circle cx="15" cy="15" r="3.6"/>
         </svg>
       </span>
-      <div><dt>Native species</dt><dd>43 mapped</dd></div>
+      <div><dt data-c="hero.stats.1.label"></dt><dd data-c="hero.stats.1.value"></dd></div>
     </dl>
 
     <article class="card card--stove mask" style="--d:880ms; --pd:22; --pr:2.4">
-      <p class="label">Field Note 07</p>
-      <h2>After the Rain</h2>
+      <p class="label" data-c="hero.featuredCard.label"></p>
+      <h2 data-c="hero.featuredCard.title"></h2>
       <figure class="portal" data-delay="1080">
-        <span class="portal-media"><img crossorigin="anonymous" src="https://ublctyddhtbgaersvxxb.supabase.co/storage/v1/object/public/threeui-media/scene-images/c74a626e396794aa239bca6f/card-ecostove.jpg" alt="Moss-covered boulders in a misty grove" loading="eager" decoding="async"></span>
+        <span class="portal-media"><img crossorigin="anonymous" data-c-src="hero.featuredCard.image.src" data-c-alt="hero.featuredCard.image.alt" loading="eager" decoding="async"></span>
         <canvas class="pixel-reveal" aria-hidden="true"></canvas>
       </figure>
-      <button class="knob" aria-label="Open field note: After the Rain">
+      <button class="knob" data-go="#projects" data-c-aria="hero.featuredCard.knobLabel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 21v-7"/><path d="M12 14c0-3.3 2.4-6 5.5-6 .3 3.6-2.2 6.4-5.5 6Z"/>
           <path d="M12 16c-.1-2.9-2.2-5.2-4.9-5.2C6.8 13.7 9 16 12 16Z"/>
@@ -865,10 +1133,165 @@
       </button>
     </article>
 
-    <a class="scroll mask" style="--d:1040ms; --pd:9" href="#">Discover<span class="track"></span></a>
+    <a class="scroll mask" style="--d:1040ms; --pd:9" href="#about" data-go="#about"><span data-c="hero.scrollCue"></span><span class="track"></span></a>
 
   </div>
 </main>
+
+<div class="sheet" id="sheet">
+
+  <section class="sec sec--about" id="about" aria-labelledby="about-title">
+    <div class="wrap cols about">
+      <header class="sec-head">
+        <p class="sec-label rise" data-c="about.label"></p>
+        <h2 class="sec-title rise" id="about-title" style="--d:80ms" data-c="about.title"></h2>
+      </header>
+      <dl class="facts rise" style="--d:160ms" data-c-list="facts"></dl>
+      <p class="copy p1 rise" style="--d:220ms" data-c="about.paragraphs.0"></p>
+      <p class="copy p2 rise" style="--d:280ms" data-c="about.paragraphs.1"></p>
+      <figure class="paper portrait rise" style="--d:200ms">
+        <span class="plate reveal" style="--d:420ms"><img data-c-src="about.portrait.image.src" data-c-alt="about.portrait.image.alt" loading="lazy" decoding="async"></span>
+        <figcaption><span class="paper-label" data-c="about.portrait.name"></span><span class="paper-title" data-c="about.portrait.role"></span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="sec" id="skills" aria-labelledby="skills-title">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label rise" data-c="skills.label"></p>
+        <h2 class="sec-title rise" id="skills-title" style="--d:80ms" data-c="skills.title"></h2>
+      </header>
+      <div class="cols sec-body" data-c-list="skills"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="projects" aria-labelledby="projects-title">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label rise" data-c="projects.label"></p>
+        <h2 class="sec-title rise" id="projects-title" style="--d:80ms" data-c="projects.title"></h2>
+      </header>
+      <div class="projects sec-body" data-c-list="projects"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="experience" aria-labelledby="experience-title">
+    <div class="wrap">
+      <header class="sec-head">
+        <p class="sec-label rise" data-c="experience.label"></p>
+        <h2 class="sec-title rise" id="experience-title" style="--d:80ms" data-c="experience.title"></h2>
+      </header>
+      <ol class="jobs sec-body" data-c-list="jobs"></ol>
+    </div>
+  </section>
+
+  <section class="sec sec--contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <p class="sec-label rise" data-c="contact.label"></p>
+      <h2 class="sec-title sec-title--xl rise" id="contact-title" style="--d:80ms" data-c-lines="contact.title"></h2>
+      <p class="copy rise" style="--d:160ms" data-c="contact.text"></p>
+      <div class="capsule rise" style="--d:240ms" data-spec data-c-list="contact"></div>
+    </div>
+  </section>
+
+  <footer class="foot" data-spy="contact">
+    <div class="wrap foot-row">
+      <span data-c="footer.copyright"></span>
+      <span data-c="footer.credit"></span>
+      <a href="#hero" data-go="#hero" data-c="footer.backToTop"></a>
+    </div>
+    <div class="foot-ghost" aria-hidden="true" data-c="footer.ghost"></div>
+  </footer>
+
+</div>
+
+<script src="content.js"></script>
+<script>
+/* ── content: fills the page from content.js ──────────────────────────
+   Runs before three.js and the page scripts on purpose, so every label is
+   in place before the liquid-metal button and the dock measure their text,
+   and before the reveal observer and [data-go] links are wired. */
+(function () {
+  'use strict';
+  var C = window.CONTENT;
+  if (!C) { console.error('content.js did not load'); return; }
+
+  function get(path) {
+    return path.split('.').reduce(function (o, k) { return o == null ? o : o[k]; }, C);
+  }
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  /* a link still marked TODO (or left empty) is hidden, never shipped dead */
+  function live(url) { return !!url && url !== 'TODO'; }
+  function ext(url) { return /^https?:/.test(url) ? ' target="_blank" rel="noopener"' : ''; }
+  function each(sel, fn) { [].forEach.call(document.querySelectorAll(sel), fn); }
+
+  document.title = C.meta.title;
+  document.querySelector('meta[name="description"]').setAttribute('content', C.meta.description);
+
+  each('[data-c]', function (el) { el.textContent = get(el.getAttribute('data-c')); });
+  each('[data-c-lines]', function (el) {
+    el.innerHTML = get(el.getAttribute('data-c-lines')).map(esc).join('<br>');
+  });
+  each('[data-c-aria]', function (el) { el.setAttribute('aria-label', get(el.getAttribute('data-c-aria'))); });
+  each('[data-c-alt]', function (el) { el.alt = get(el.getAttribute('data-c-alt')); });
+  each('[data-c-src]', function (el) { el.src = get(el.getAttribute('data-c-src')); });
+
+  var play = document.querySelector('[data-c-play]');
+  if (!live(C.hero.play.url)) play.hidden = true;
+  else play.querySelector('button').addEventListener('click', function () {
+    window.open(C.hero.play.url, '_blank', 'noopener');
+  });
+
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/></svg>';
+  var MAIL = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.4 3.6h9.2a1.2 1.2 0 0 1 1.2 1.2v6.4a1.2 1.2 0 0 1-1.2 1.2H3.4a1.2 1.2 0 0 1-1.2-1.2V4.8a1.2 1.2 0 0 1 1.2-1.2Z"/><path d="m2.8 4.6 5.2 4 5.2-4"/></svg>';
+
+  /* the same markup the sections were written with, one entry at a time */
+  var lists = {
+    facts: function () {
+      return C.about.facts.map(function (f) {
+        return '<div><dt>' + esc(f.label) + '</dt><dd>' + esc(f.value) + '</dd></div>';
+      }).join('');
+    },
+    skills: function () {
+      return C.skills.groups.map(function (g, i) {
+        return '<div class="skill-group rise" style="--d:' + i * 80 + 'ms"><h3>' + esc(g.name) + '</h3>' +
+          '<ul class="chips">' + g.items.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></div>';
+      }).join('');
+    },
+    projects: function () {
+      return C.projects.items.map(function (p, i) {
+        var d = (i % 2) * 100;
+        return '<article class="paper project rise" style="--d:' + d + 'ms">' +
+          '<span class="plate reveal" style="--d:' + (d + 220) + 'ms"><img src="' + esc(p.image.src) + '" alt="' + esc(p.image.alt) + '" loading="lazy" decoding="async"></span>' +
+          '<div class="project-body"><p class="paper-label">' + esc(p.label) + '</p><h3 class="paper-title">' + esc(p.title) + '</h3>' +
+          '<p>' + esc(p.description) + '</p><ul class="tags">' +
+          p.tags.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
+          (live(p.url) ? '<a class="knob" href="' + esc(p.url) + '"' + ext(p.url) + ' aria-label="Open ' + esc(p.title) + '">' + ARROW + '</a>' : '') +
+          '</article>';
+      }).join('');
+    },
+    jobs: function () {
+      return C.experience.items.map(function (j) {
+        return '<li class="job cols rise"><p class="job-when">' + esc(j.when) + '</p>' +
+          '<div class="job-role"><h3>' + esc(j.role) + '</h3><p>' + esc(j.org) + '</p></div>' +
+          '<p class="copy">' + esc(j.text) + '</p></li>';
+      }).join('');
+    },
+    contact: function () {
+      return '<a class="cta" href="mailto:' + esc(C.contact.email) + '">' + MAIL + esc(C.contact.email) + '</a>' +
+        C.contact.links.filter(function (l) { return live(l.url); }).map(function (l) {
+          return '<a class="chip-link" href="' + esc(l.url) + '"' + ext(l.url) + '>' + esc(l.label) + '</a>';
+        }).join('');
+    }
+  };
+  each('[data-c-list]', function (el) { el.innerHTML = lists[el.getAttribute('data-c-list')](); });
+})();
+</script>
 
 <script src="inner-green-assets/three.min.js"></script>
 <script>
@@ -1468,7 +1891,15 @@ let drawn = null;                  // signature of the last frame actually drawn
 const IDLE_HZ = 30;
 let lastDraw = 0;
 
+// The page scrolls now. Off screen the metal holds its last frame; the clock
+// is carried forward so it picks up where it left off rather than jumping.
+let onScreen = true;
+if(hostWindow.IntersectionObserver){
+  new hostWindow.IntersectionObserver(e => { onScreen = e[e.length - 1].isIntersecting; }).observe(host);
+}
+
 function frame(now){
+  if(!onScreen){ last = now; requestAnimationFrame(frame); return; }
   const dtRaw = (now - last) / 1000; last = now;
   const dt = Math.min(dtRaw, 1/20);
   if(!calm.matches) clock += dt;
@@ -1727,6 +2158,9 @@ window.__seek   = v => { clock = v; drawn = null; };
   var heroEl = document.getElementById('hero');
   var lastX = null, lastY = null;
   var ticking = false, parOn = false;
+  /* false while the hero is scrolled out of view: the loop keeps running
+     for the fixed dock, but the GL scene stops drawing */
+  var heroOn = true;
 
   /* one rAF for the whole page: it eases the pointer, publishes it, and
      renders the GL scene if there is one */
@@ -1757,7 +2191,7 @@ window.__seek   = v => { clock = v; drawn = null; };
         heroEl.style.setProperty('--py', ny);
       }
     }
-    if (renderer && clock) renderFrame();
+    if (renderer && clock && heroOn) renderFrame();
   }
 
   function startParallax() {
@@ -2114,18 +2548,67 @@ window.__seek   = v => { clock = v; drawn = null; };
       st.el.addEventListener('focusout', function () { st.focused = false; SPEC.dirty = true; });
     })(SPEC.items[i]);
 
-    /* the current section moves with the click, and the pill throws a
-       handful of pollen — the page already has an emitter for that */
+    /* the pill carries the page to its section and throws a handful of
+       pollen — the page already has an emitter for that. The current
+       section is left to the scroll-spy, which also sees wheel and keys. */
     root.addEventListener('click', function (e) {
       var item = e.target.closest('[data-dock]');
       if (!item) return;
       e.preventDefault();
-      if (!item.classList.contains('dock-mark')) {
-        for (var i = 0; i < DOCK.items.length; i++) DOCK.items[i].el.classList.remove('is-active');
-        item.classList.add('is-active');
-      }
+      goTo(item.getAttribute('href'));
       burstAt(e.clientX, e.clientY);
     });
+  }
+
+  function goTo(hash) {
+    var el = hash && hash.charAt(0) === '#' && document.getElementById(hash.slice(1));
+    if (!el) return;
+    el.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+    if (history.replaceState) history.replaceState(null, '', hash);
+  }
+
+  /* ── the sheet: section links, scroll-spy, reveals, GL pause ───────── */
+  function initSheet() {
+    var go = document.querySelectorAll('[data-go]');
+    for (var i = 0; i < go.length; i++) go[i].addEventListener('click', function (e) {
+      e.preventDefault();
+      goTo(this.getAttribute('data-go'));
+    });
+
+    var reveal = document.querySelectorAll('.sheet .rise, .sheet .reveal');
+    if (!('IntersectionObserver' in window)) {
+      for (i = 0; i < reveal.length; i++) reveal[i].classList.add('is-in');
+      return;
+    }
+
+    new IntersectionObserver(function (entries) {
+      heroOn = entries[entries.length - 1].isIntersecting;
+    }).observe(heroEl);
+
+    var seen = new IntersectionObserver(function (entries) {
+      for (var j = 0; j < entries.length; j++) {
+        if (!entries[j].isIntersecting) continue;
+        entries[j].target.classList.add('is-in');
+        seen.unobserve(entries[j].target);
+      }
+    }, { rootMargin: '0px 0px -8% 0px' });
+    for (i = 0; i < reveal.length; i++) seen.observe(reveal[i]);
+
+    /* a section is current while it crosses a band just above the middle
+       of the screen; the hero lights no pill, the footer counts as contact */
+    var pills = document.querySelectorAll('.dock [data-dock]');
+    var spy = new IntersectionObserver(function (entries) {
+      for (var j = 0; j < entries.length; j++) {
+        if (!entries[j].isIntersecting) continue;
+        var hash = '#' + (entries[j].target.getAttribute('data-spy') || entries[j].target.id);
+        for (var k = 0; k < pills.length; k++) {
+          pills[k].classList.toggle('is-active',
+            pills[k].getAttribute('href') === hash && !pills[k].classList.contains('dock-mark'));
+        }
+      }
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    var spied = document.querySelectorAll('#hero, .sheet > section, .sheet > [data-spy]');
+    for (i = 0; i < spied.length; i++) spy.observe(spied[i]);
   }
 
   function ready() {
@@ -2141,6 +2624,7 @@ window.__seek   = v => { clock = v; drawn = null; };
     startParallax();
     startPortalReveal();
     initDock();
+    initSheet();
     /* the wipes are done — drop the clips so nothing keeps a stacking
        context alive (the About knob has to stay above the moss) */
     setTimeout(function () { document.body.classList.add('intro-done'); }, REDUCED ? 0 : 2900);
